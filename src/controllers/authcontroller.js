@@ -1,5 +1,12 @@
+// backend/src/controllers/authController.js
 const { admin, db } = require('../config/firebase');
 
+/**
+ * Validate password complexity:
+ * - At least 6 characters
+ * - At least one number
+ * - At least one special character
+ */
 const validatePassword = (password) => {
   const regex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,}$/;
   return regex.test(password);
@@ -15,8 +22,19 @@ exports.register = async (req, res) => {
 
     if (!validatePassword(password)) {
       return res.status(400).json({
-        message: 'Password must be at least 6 characters, include a number and a special character'
+        message: 'Password must be at least 6 characters, include a number and a special character',
       });
+    }
+
+    // 🔹 Check if email already exists
+    try {
+      await admin.auth().getUserByEmail(email);
+      return res.status(400).json({ message: 'Email already registered. Please log in or reset your password.' });
+    } catch (err) {
+      if (err.code !== 'auth/user-not-found') {
+        throw err; // Unexpected error
+      }
+      // If user-not-found, continue with registration
     }
 
     let registrationFee, referralReward;
@@ -30,7 +48,7 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: 'Invalid account type' });
     }
 
-    // Create user with Firebase Admin
+    // 🔹 Create new user in Firebase Authentication
     const userRecord = await admin.auth().createUser({
       email,
       password,
@@ -38,7 +56,7 @@ exports.register = async (req, res) => {
       disabled: false,
     });
 
-    // Create user document in Firestore
+    // 🔹 Create user document in Firestore
     await db.collection('users').doc(userRecord.uid).set({
       email,
       accountType,
@@ -54,7 +72,7 @@ exports.register = async (req, res) => {
       accountActive: false,
     });
 
-    // If referral code present, record referral (simplified: assume referralCode is referrer's userId)
+    // 🔹 If referral code provided, credit referrer
     if (referralCode) {
       const referrerDoc = await db.collection('users').doc(referralCode).get();
       if (referrerDoc.exists) {
@@ -63,8 +81,9 @@ exports.register = async (req, res) => {
           referredId: userRecord.uid,
           accountType,
           reward: referralReward,
-          createdAt: new Date()
+          createdAt: new Date(),
         });
+
         await db.collection('users').doc(referralCode).update({
           referralsEarned: admin.firestore.FieldValue.increment(1),
           balance: admin.firestore.FieldValue.increment(referralReward),
@@ -72,17 +91,16 @@ exports.register = async (req, res) => {
       }
     }
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'User registered. Please verify your email and pay registration fee.',
       uid: userRecord.uid,
     });
   } catch (error) {
     console.error('Register error:', error);
-    res.status(500).json({ message: error.message || 'Registration failed' });
+    return res.status(500).json({ message: error.message || 'Registration failed' });
   }
 };
 
 exports.login = async (req, res) => {
-  // Firebase client SDK handles login; backend can verify tokens.
-  res.status(501).json({ message: 'Login handled by Firebase client SDK' });
+  res.status(501).json({ message: 'Login is handled on frontend via Firebase Authentication SDK' });
 };
