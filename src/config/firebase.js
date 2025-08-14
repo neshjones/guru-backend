@@ -8,9 +8,12 @@ const serviceAccount = {
   privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
 };
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+// Only initialize if there are no apps already
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
+}
 
 const db = admin.firestore();
 
