@@ -4,10 +4,23 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 const app = express();
-app.use(cors());
+
+// ✅ CORS fix
+app.use(cors({
+  origin: [
+    "http://127.0.0.1:8080",
+    "http://localhost:8080",
+    "https://guru-frontend.onrender.com" // replace with your actual frontend live URL
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+}));
+
+// ✅ Parse JSON
 app.use(bodyParser.json());
 
-// Example: Firebase Admin SDK init
+// Firebase Admin SDK
 const admin = require('firebase-admin');
 admin.initializeApp({
   credential: admin.credential.cert({
@@ -28,7 +41,6 @@ app.post('/payment', async (req, res) => {
     }
 
     if (process.env.MPESA_MODE === 'manual') {
-      // Save payment code for manual verification
       await db.collection('payments').add({
         userId,
         mpesaCode,
@@ -40,7 +52,6 @@ app.post('/payment', async (req, res) => {
         message: 'Payment code received. Awaiting verification.'
       });
     } else {
-      // If you later switch to Daraja API mode, add that logic here
       return res.status(400).json({ error: 'Invalid M-Pesa mode.' });
     }
 
@@ -50,6 +61,7 @@ app.post('/payment', async (req, res) => {
   }
 });
 
+// Root route
 app.get('/', (req, res) => {
   res.send('Guru Backend running...');
 });
