@@ -5,8 +5,12 @@ const cors = require('cors');
 
 const app = express();
 
-// ✅ CORS (Testing Mode - Allow all origins)
-app.use(cors());
+// ✅ CORS (Allow local frontend)
+app.use(cors({
+  origin: 'http://127.0.0.1:8080',
+  methods: ['GET','POST','PUT','DELETE'],
+  credentials: true
+}));
 
 // ✅ Parse JSON
 app.use(bodyParser.json());
@@ -24,7 +28,11 @@ admin.initializeApp({
 });
 const db = admin.firestore();
 
-// M-Pesa payment route
+// ✅ Auth routes
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes);
+
+// ✅ M-Pesa payment route
 app.post('/payment', async (req, res) => {
   try {
     const { userId, mpesaCode } = req.body;
@@ -59,6 +67,7 @@ app.get('/', (req, res) => {
   res.send('Guru Backend running...');
 });
 
+// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
