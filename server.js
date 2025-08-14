@@ -28,8 +28,8 @@ admin.initializeApp({
 });
 const db = admin.firestore();
 
-// ✅ Auth routes (fixed filename)
-const authRoutes = require('./routes/authRoutes');
+// ✅ Auth routes (correct path for src folder)
+const authRoutes = require('./src/routes/authRoutes');
 app.use('/api/auth', authRoutes);
 
 // ✅ M-Pesa payment route
