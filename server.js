@@ -5,17 +5,8 @@ const cors = require('cors');
 
 const app = express();
 
-// ✅ CORS fix
-app.use(cors({
-  origin: [
-    "http://127.0.0.1:8080",
-    "http://localhost:8080",
-    "https://guru-frontend.onrender.com" // replace with your actual frontend live URL
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-}));
+// ✅ CORS (Testing Mode - Allow all origins)
+app.use(cors());
 
 // ✅ Parse JSON
 app.use(bodyParser.json());
@@ -25,7 +16,9 @@ const admin = require('firebase-admin');
 admin.initializeApp({
   credential: admin.credential.cert({
     projectId: process.env.FIREBASE_PROJECT_ID,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    privateKey: process.env.FIREBASE_PRIVATE_KEY
+      ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+      : undefined,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
   })
 });
