@@ -7,7 +7,7 @@ app.use(cors());
 app.use(express.json());
 
 // 👇 Mount API routes
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", authroutes);
 
 app.get("/", (req, res) => {
   res.send("Backend is running ✅");
