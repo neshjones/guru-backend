@@ -1,4 +1,5 @@
-const { admin, db } = require("../../config/firebase");
+const { admin, db } = require("../config/firebase");
+
 
 const validatePassword = (password) => {
   const regex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,}$/;
