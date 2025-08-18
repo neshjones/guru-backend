@@ -1,13 +1,13 @@
 const express = require("express");
 const cors = require("cors");
-const authRoutes = require("./src/routes/auth");
+const authRoutes = require("./src/routes/authRoutes"); // ✅ match filename
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 // 👇 Mount API routes
-app.use("/api/auth", authroutes);
+app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend is running ✅");
